@@ -29,14 +29,8 @@
       const [currentMonth, setCurrentMonth] = useState(9);
       const [currentYear, setCurrentYear] = useState(2025);
       const [selectedDates, setSelectedDates] = useState({});
-      const [editorNotes, setEditorNotes] = useState({});
-      const [viewerNotes, setViewerNotes] = useState({});
       const [paymentStatus, setPaymentStatus] = useState({});
       const [hoveredColor, setHoveredColor] = useState(null);
-      const [showNotesPopup, setShowNotesPopup] = useState(false);
-      const [selectedDate, setSelectedDate] = useState(null);
-      const [editingNote, setEditingNote] = useState(null);
-      const [tempNoteText, setTempNoteText] = useState('');
 
       const classTypes = [
         { id: 'next', color: 'bg-gray-400', label: 'Next Class', hours: 0, fee: 0 },
@@ -102,48 +96,6 @@
         }
       };
 
-      const openNotesPopup = (day) => {
-        setSelectedDate(day);
-        setShowNotesPopup(true);
-      };
-
-      const closeNotesPopup = () => {
-        setShowNotesPopup(false);
-        setSelectedDate(null);
-        setEditingNote(null);
-        setTempNoteText('');
-      };
-
-      const startEditingNote = (type, currentText) => {
-        setEditingNote(type);
-        setTempNoteText(currentText);
-      };
-
-      const saveNote = () => {
-        if (!selectedDate) return;
-        const dateKey = `${currentYear}-${currentMonth}-${selectedDate}`;
-        
-        if (editingNote === 'editor' && isEditor) {
-          setEditorNotes(prev => ({
-            ...prev,
-            [dateKey]: tempNoteText
-          }));
-        } else if (editingNote === 'viewer' && !isEditor) {
-          setViewerNotes(prev => ({
-            ...prev,
-            [dateKey]: tempNoteText
-          }));
-        }
-        
-        setEditingNote(null);
-        setTempNoteText('');
-      };
-
-      const addNewNote = (type) => {
-        setEditingNote(type);
-        setTempNoteText('');
-      };
-
       const togglePaymentStatus = () => {
         if (!isEditor) return;
         const monthKey = `${currentYear}-${currentMonth}`;
@@ -187,57 +139,40 @@
         for (let day = 1; day <= daysInMonth; day++) {
           const dateKey = `${currentYear}-${currentMonth}-${day}`;
           const selectedClass = selectedDates[dateKey];
-          const hasNotes = editorNotes[dateKey] || viewerNotes[dateKey];
           
           days.push(
             <div key={day} className="relative group">
-              <div className={`border-2 border-gray-300 rounded-lg overflow-hidden flex flex-col ${
+              <div className={`h-20 border-2 border-gray-300 rounded-lg flex items-center justify-center cursor-pointer transition-all hover:shadow-lg ${
                 selectedClass ? classTypes.find(c => c.id === selectedClass)?.color : 'bg-white'
               }`}>
-                {/* Date Header */}
-                <div className={`flex-1 flex items-center justify-center cursor-pointer transition-all hover:shadow-lg ${
-                  selectedClass ? '' : 'hover:bg-gray-50'
-                }`}>
-                  <span className={`text-lg font-semibold ${selectedClass ? 'text-white' : 'text-gray-700'}`}>
-                    {day}
-                  </span>
-                  
-                  {/* Dropdown Menu for Editor */}
-                  {isEditor && (
-                    <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                      {classTypes.map((classType) => (
-                        <button
-                          key={classType.id}
-                          onClick={() => handleDateClick(day, classType.id)}
-                          className="w-full px-4 py-2 text-left hover:bg-gray-100 first:rounded-t-lg flex items-center gap-2"
-                        >
-                          <div className={`w-4 h-4 rounded ${classType.color}`}></div>
-                          <span className="text-sm">{classType.label}</span>
-                        </button>
-                      ))}
-                      {selectedClass && (
-                        <button
-                          onClick={() => handleDateClick(day, 'remove')}
-                          className="w-full px-4 py-2 text-left hover:bg-gray-100 last:rounded-b-lg flex items-center gap-2 border-t border-gray-200"
-                        >
-                          <div className="w-4 h-4 rounded bg-red-500"></div>
-                          <span className="text-sm text-red-600 font-medium">Remove Class</span>
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <span className={`text-lg font-semibold ${selectedClass ? 'text-white' : 'text-gray-700'}`}>
+                  {day}
+                </span>
                 
-                {/* Notes Button */}
-                <button
-                  onClick={() => openNotesPopup(day)}
-                  className="bg-pink-100 py-2 hover:bg-pink-200 transition-colors relative"
-                >
-                  <span className="text-gray-600 text-sm font-medium">Notes</span>
-                  {hasNotes && (
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-red-500 rounded-full"></span>
-                  )}
-                </button>
+                {/* Dropdown Menu for Editor */}
+                {isEditor && (
+                  <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                    {classTypes.map((classType) => (
+                      <button
+                        key={classType.id}
+                        onClick={() => handleDateClick(day, classType.id)}
+                        className="w-full px-4 py-2 text-left hover:bg-gray-100 first:rounded-t-lg flex items-center gap-2"
+                      >
+                        <div className={`w-4 h-4 rounded ${classType.color}`}></div>
+                        <span className="text-sm">{classType.label}</span>
+                      </button>
+                    ))}
+                    {selectedClass && (
+                      <button
+                        onClick={() => handleDateClick(day, 'remove')}
+                        className="w-full px-4 py-2 text-left hover:bg-gray-100 last:rounded-b-lg flex items-center gap-2 border-t border-gray-200"
+                      >
+                        <div className="w-4 h-4 rounded bg-red-500"></div>
+                        <span className="text-sm text-red-600 font-medium">Remove Class</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -278,138 +213,7 @@
         );
       }
 
-      // Notes Popup
-      const renderNotesPopup = () => {
-        if (!showNotesPopup || !selectedDate) return null;
-        
-        const dateKey = `${currentYear}-${currentMonth}-${selectedDate}`;
-        const editorNote = editorNotes[dateKey] || '';
-        const viewerNote = viewerNotes[dateKey] || '';
-
-        return (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto">
-              {/* Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center rounded-t-2xl">
-                <h3 className="text-xl font-bold text-gray-800">
-                  Notes - {monthNames[currentMonth]} {selectedDate}, {currentYear}
-                </h3>
-                <button
-                  onClick={closeNotesPopup}
-                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <XIcon />
-                </button>
-              </div>
-
-              {/* Notes Content */}
-              <div className="p-4 space-y-4">
-                {/* Editor Notes Section */}
-                <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-2">Editor Notes</p>
-                  {editorNote && editingNote !== 'editor' ? (
-                    <div className="bg-pink-200 rounded-lg p-3 relative group">
-                      <p className="text-black text-sm">{editorNote}</p>
-                      {isEditor && (
-                        <button
-                          onClick={() => startEditingNote('editor', editorNote)}
-                          className="absolute top-2 right-2 p-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <EditIcon />
-                        </button>
-                      )}
-                    </div>
-                  ) : editingNote === 'editor' ? (
-                    <div className="space-y-2">
-                      <textarea
-                        value={tempNoteText}
-                        onChange={(e) => setTempNoteText(e.target.value)}
-                        className="w-full bg-pink-100 border-2 border-pink-300 rounded-lg p-3 text-black text-sm resize-none focus:outline-none focus:border-pink-400"
-                        rows="3"
-                        placeholder="Type your note..."
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={saveNote}
-                          className="flex-1 bg-pink-500 text-white py-2 rounded-lg font-semibold hover:bg-pink-600 transition-colors"
-                        >
-                          Done
-                        </button>
-                        <button
-                          onClick={() => setEditingNote(null)}
-                          className="px-4 bg-gray-300 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : isEditor ? (
-                    <button
-                      onClick={() => addNewNote('editor')}
-                      className="w-full bg-pink-100 border-2 border-dashed border-pink-300 rounded-lg p-3 text-pink-500 text-sm font-medium hover:bg-pink-200 transition-colors"
-                    >
-                      + Add Editor Note
-                    </button>
-                  ) : (
-                    <p className="text-gray-400 text-sm italic">No editor notes</p>
-                  )}
-                </div>
-
-                {/* Viewer Notes Section */}
-                <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-2">Viewer Notes</p>
-                  {viewerNote && editingNote !== 'viewer' ? (
-                    <div className="bg-blue-200 rounded-lg p-3 relative group">
-                      <p className="text-black text-sm">{viewerNote}</p>
-                      {!isEditor && (
-                        <button
-                          onClick={() => startEditingNote('viewer', viewerNote)}
-                          className="absolute top-2 right-2 p-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <EditIcon />
-                        </button>
-                      )}
-                    </div>
-                  ) : editingNote === 'viewer' ? (
-                    <div className="space-y-2">
-                      <textarea
-                        value={tempNoteText}
-                        onChange={(e) => setTempNoteText(e.target.value)}
-                        className="w-full bg-blue-100 border-2 border-blue-300 rounded-lg p-3 text-black text-sm resize-none focus:outline-none focus:border-blue-400"
-                        rows="3"
-                        placeholder="Type your note..."
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={saveNote}
-                          className="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors"
-                        >
-                          Done
-                        </button>
-                        <button
-                          onClick={() => setEditingNote(null)}
-                          className="px-4 bg-gray-300 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : !isEditor ? (
-                    <button
-                      onClick={() => addNewNote('viewer')}
-                      className="w-full bg-blue-100 border-2 border-dashed border-blue-300 rounded-lg p-3 text-blue-500 text-sm font-medium hover:bg-blue-200 transition-colors"
-                    >
-                      + Add Viewer Note
-                    </button>
-                  ) : (
-                    <p className="text-gray-400 text-sm italic">No viewer notes</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      };
+      // Notes Popup - REMOVED
 
       // Main Calendar View
       return (
@@ -551,9 +355,6 @@
               </div>
             </div>
           </div>
-
-          {/* Notes Popup */}
-          {renderNotesPopup()}
         </div>
       );
     };
