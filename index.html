@@ -13,7 +13,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect } = React;
 
     const ChevronLeft = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>;
     const ChevronRight = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
@@ -28,9 +28,25 @@
       const [loginCode, setLoginCode] = useState('');
       const [currentMonth, setCurrentMonth] = useState(9);
       const [currentYear, setCurrentYear] = useState(2025);
-      const [selectedDates, setSelectedDates] = useState({});
-      const [paymentStatus, setPaymentStatus] = useState({});
+      const [selectedDates, setSelectedDates] = useState(() => {
+        const saved = localStorage.getItem('calendarDates');
+        return saved ? JSON.parse(saved) : {};
+      });
+      const [paymentStatus, setPaymentStatus] = useState(() => {
+        const saved = localStorage.getItem('paymentStatus');
+        return saved ? JSON.parse(saved) : {};
+      });
       const [hoveredColor, setHoveredColor] = useState(null);
+
+      // Save selectedDates to localStorage whenever it changes
+      useEffect(() => {
+        localStorage.setItem('calendarDates', JSON.stringify(selectedDates));
+      }, [selectedDates]);
+
+      // Save paymentStatus to localStorage whenever it changes
+      useEffect(() => {
+        localStorage.setItem('paymentStatus', JSON.stringify(paymentStatus));
+      }, [paymentStatus]);
 
       const classTypes = [
         { id: 'next', color: 'bg-gray-400', label: 'Next Class', hours: 0, fee: 0 },
